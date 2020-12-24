@@ -39,6 +39,8 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainController implements Initializable {
 
@@ -79,8 +81,8 @@ public class MainController implements Initializable {
         for (File fileAddress : indexFileUriList) {
 
             String directory = "null";
-
-            String[] filetoArray = fileAddress.toString().split("/");
+            String filename = fileAddress.toString().replace("\\", "/");
+            String[] filetoArray = filename.split("/");
 
             //抓出有game命名的資料夾
             for (String fileName : filetoArray) {
@@ -98,10 +100,10 @@ public class MainController implements Initializable {
             @Override
             public void accept(Node node) {
                 StackPane stackPane = (StackPane) node;
-                fileDateBoxHeight += stackPane.getMinHeight()+10;
+                fileDateBoxHeight += stackPane.getMinHeight();
             }
         });
-        fileDateBoxHeight = fileDateBoxHeight + 40;
+        fileDateBoxHeight = fileDateBoxHeight + 60;
         System.out.println(fileDateBoxHeight);
     }
 
@@ -336,17 +338,21 @@ public class MainController implements Initializable {
         fileProgressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
         File rootFile = mainFile;//拿取使用者點擊的路徑
 
+
         File[] files = rootFile.listFiles();//查詢該目錄下的所有檔案
         if (files != null) {
             for (File file : files) {
-                String[] fileNames = file.toString().split("/");
+                String file01 =  file.toString().replace("\\", "/");
+
+                String[] fileNames = file01.split("/");
                 //抓出該url路徑下的檔案名稱
                 String fileName = fileNames[fileNames.length - 1];
+
 
                 //找尋index.php 該文件副檔名,如果檔案名長度大於9才能尋訪
                 if (fileName.length() > 9) {
                     String checkFileName = fileName.substring(fileName.length() - 4);
-
+                    System.out.println(fileName);
                     //檢查檔案名如果開頭是index,結尾是.php,就加入ArrayList中
                     if (fileName.substring(0, 5).equals("index") && checkFileName.equals(".php")) {
                         indexFileUriList.add(file);
@@ -367,23 +373,49 @@ public class MainController implements Initializable {
     private void squenceIndexFileUriList(){
         list.clear();
         for (int i =0 ; i<indexFileUriList.size() ; i++){
-            String[] gameNames = indexFileUriList.get(i).toString().split("/");
+            String filename =  indexFileUriList.get(i).toString().replace("\\", "/");
+            String[] gameNames = filename.split("/");
             int gameNumber = 0;
             for (String name :gameNames){
                 name = name.toLowerCase();
-                if (name.contains("game")){
-                    gameNumber = Integer.parseInt(name.replace("game",""));
+                if (name.contains("game")&&name.length()>=6){
+                    String regex ="\\d*";
+                    Pattern p = Pattern.compile(regex);
+                    Matcher m = p.matcher(name);
+                    System.out.println("name:"+name);
+                    String[] num = new String[30];
+                    int index =0;
+                    while (m.find()){
+                        if(!"".equals(m.group())) {
+                            num[index] = m.group();
+                            index++;
+                        }
+                    }
+                    gameNumber = Integer.parseInt(num[0]);
                     break;
                 }
             }
             if (i>0){
                 for (int j = list.size()-1; j>=0 ; j-- ){
-                    String[] gameNames2 = list.get(j).toString().split("/");
+                    String filename2 =  list.get(j).toString().replace("\\", "/");
+                    String[] gameNames2 = filename2.split("/");
                     int gameNumber2 = 0;
                     for (String name :gameNames2){
                         name = name.toLowerCase();
-                        if (name.contains("game")){
-                            gameNumber2 = Integer.parseInt(name.replace("game",""));
+                        if (name.contains("game") && name.length()>=6){
+                            String regex ="\\d*";
+                            Pattern p = Pattern.compile(regex);
+                            Matcher m = p.matcher(name);
+                            System.out.println("name:"+name);
+                            String[] num = new String[30];
+                            int index =0;
+                            while (m.find()){
+                                if(!"".equals(m.group())) {
+                                    num[index] = m.group();
+                                    index++;
+                                }
+                            }
+                            gameNumber = Integer.parseInt(num[0]);
                             break;
                         }
                     }
@@ -423,7 +455,9 @@ public class MainController implements Initializable {
             outputData(fileName);
             fileProgressBar.setProgress(value);
         }
+        fileProgressBar.setProgress(1);
         fileDataVBox.getChildren().clear();
+        starButton.setDisable(true);
 
     }
 
@@ -457,13 +491,14 @@ public class MainController implements Initializable {
      * 將新資料輸出
      */
     private void outputData(File fileName) throws IOException {
-        String[] file = fileName.toString().split("/");
+        String file01 = fileName.toString().replace("\\", "/");
+        String[] file = file01.split("/");
         String newFile = "";
         for (int i =0 ; i<file.length-1 ;i++){
             if (!file[i].trim().isEmpty())
-                newFile += "/"+file[i];
+                newFile += "\\"+file[i];
         }
-        newFile +="/index.php";
+        newFile +="\\index.php";
         System.out.println("輸出位置"+newFile);
         BufferedWriter writer = new BufferedWriter(new FileWriter(newFile));
 

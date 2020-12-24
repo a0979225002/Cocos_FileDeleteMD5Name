@@ -30,7 +30,7 @@ public class App extends Application {
         mainStage.initStyle(StageStyle.UTILITY);
         mainStage.centerOnScreen();//打開時在使用這螢幕的正中間
         mainStage.setScene(scene);
-//        mainStage.setResizable(false);//不能調整大小
+        mainStage.setResizable(false);//不能調整大小
         mainStage.show();
 
     }
